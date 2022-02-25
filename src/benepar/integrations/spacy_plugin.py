@@ -1,10 +1,9 @@
 import numpy as np
+import torch
 
 from .downloader import load_trained_model
-from ..parse_base import BaseParser, BaseInputExample
-from .spacy_extensions import ConstituentData, NonConstituentException
-
-import torch
+from .spacy_extensions import ConstituentData
+from ..parse_base import BaseInputExample
 
 
 class PartialConstituentData:
@@ -94,11 +93,11 @@ class BeneparComponent:
     name = "benepar"
 
     def __init__(
-        self,
-        name,
-        subbatch_max_tokens=500,
-        disable_tagger=False,
-        batch_size="ignored",
+            self,
+            name,
+            subbatch_max_tokens=500,
+            disable_tagger=False,
+            batch_size="ignored",
     ):
         """Load a trained parser model.
 
@@ -147,12 +146,12 @@ class BeneparComponent:
         constituent_data = PartialConstituentData()
         wrapped_sents = [SentenceWrapper(sent) for sent in doc.sents]
         for sent, parse in zip(
-            doc.sents,
-            self._parser.parse(
-                wrapped_sents,
-                return_compressed=True,
-                subbatch_max_tokens=self.subbatch_max_tokens,
-            ),
+                doc.sents,
+                self._parser.parse(
+                    wrapped_sents,
+                    return_compressed=True,
+                    subbatch_max_tokens=self.subbatch_max_tokens,
+                ),
         ):
             constituent_data.starts.append(parse.starts + sent.start)
             constituent_data.ends.append(parse.ends + sent.start)
@@ -167,11 +166,11 @@ class BeneparComponent:
 
 
 def create_benepar_component(
-    nlp,
-    name,
-    model: str,
-    subbatch_max_tokens: int,
-    disable_tagger: bool,
+        nlp,
+        name,
+        model: str,
+        subbatch_max_tokens: int,
+        disable_tagger: bool,
 ):
     return BeneparComponent(
         model,

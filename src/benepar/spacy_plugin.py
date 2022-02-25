@@ -2,7 +2,7 @@ __all__ = ["BeneparComponent", "NonConstituentException"]
 
 import warnings
 
-from .integrations.spacy_plugin import BeneparComponent, NonConstituentException
+from .integrations.spacy_plugin import BeneparComponent
 
 warnings.warn(
     "BeneparComponent and NonConstituentException have been moved to the benepar "

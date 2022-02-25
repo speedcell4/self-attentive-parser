@@ -1,5 +1,5 @@
-from abc import ABC, abstractmethod
 import dataclasses
+from abc import ABC, abstractmethod
 from typing import Any, Iterable, List, Optional, Tuple, Union
 
 import nltk
@@ -71,7 +71,7 @@ class CompressedParserOutput:
     # Part of speech tag ids as output by the parser (may be None if the parser
     # does not do POS tagging). These indices are associated with an external
     # tag_vocab dictionary.
-    tags: Optional[Iterable[int]] = None # Must be None or a numpy array
+    tags: Optional[Iterable[int]] = None  # Must be None or a numpy array
 
     def without_predicted_tags(self):
         return dataclasses.replace(self, tags=None)
@@ -81,7 +81,7 @@ class CompressedParserOutput:
 
     @classmethod
     def from_tree(
-        cls, tree: nltk.Tree, label_vocab: dict, tag_vocab: Optional[dict] = None
+            cls, tree: nltk.Tree, label_vocab: dict, tag_vocab: Optional[dict] = None
     ) -> "CompressedParserOutput":
         num_words = len(tree.leaves())
         starts = np.empty(2 * num_words, dtype=int)
@@ -161,9 +161,9 @@ class CompressedParserOutput:
             else:
                 children = []
                 while (
-                    (idx + 1) < len(self.starts)
-                    and i <= self.starts[idx + 1]
-                    and self.ends[idx + 1] <= j
+                        (idx + 1) < len(self.starts)
+                        and i <= self.starts[idx + 1]
+                        and self.ends[idx + 1] <= j
                 ):
                     children.extend(helper())
 
@@ -183,7 +183,7 @@ class BaseParser(ABC):
     @classmethod
     @abstractmethod
     def from_trained(
-        cls, model_name: str, config: dict = None, state_dict: dict = None
+            cls, model_name: str, config: dict = None, state_dict: dict = None
     ) -> "BaseParser":
         """Load a trained parser."""
         pass
@@ -195,18 +195,18 @@ class BaseParser(ABC):
 
     @abstractmethod
     def parse(
-        self,
-        examples: Iterable[BaseInputExample],
-        return_compressed: bool = False,
-        return_scores: bool = False,
-        subbatch_max_tokens: Optional[int] = None,
+            self,
+            examples: Iterable[BaseInputExample],
+            return_compressed: bool = False,
+            return_scores: bool = False,
+            subbatch_max_tokens: Optional[int] = None,
     ) -> Union[Iterable[nltk.Tree], Iterable[Any]]:
         """Parse sentences."""
         pass
 
     @abstractmethod
     def encode_and_collate_subbatches(
-        self, examples: List[BaseInputExample], subbatch_max_tokens: int
+            self, examples: List[BaseInputExample], subbatch_max_tokens: int
     ) -> List[dict]:
         """Split batch into sub-batches and convert to tensor features"""
         pass

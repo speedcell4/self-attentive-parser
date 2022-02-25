@@ -1,35 +1,32 @@
 import os
 
-import numpy as np
-
 import torch
 import torch.nn as nn
 import torch.nn.functional as F
-
 from transformers import AutoConfig, AutoModel
 
 from . import char_lstm
 from . import decode_chart
 from . import nkutil
+from . import parse_base
+from . import retokenization
+from . import subbatching
 from .partitioned_transformer import (
     ConcatPositionalEncoding,
     FeatureDropout,
     PartitionedTransformerEncoder,
     PartitionedTransformerEncoderLayer,
 )
-from . import parse_base
-from . import retokenization
-from . import subbatching
 
 
 class ChartParser(nn.Module, parse_base.BaseParser):
     def __init__(
-        self,
-        tag_vocab,
-        label_vocab,
-        char_vocab,
-        hparams,
-        pretrained_model_path=None,
+            self,
+            tag_vocab,
+            label_vocab,
+            char_vocab,
+            hparams,
+            pretrained_model_path=None,
     ):
         super().__init__()
         self.config = locals()
@@ -238,7 +235,7 @@ class ChartParser(nn.Module, parse_base.BaseParser):
 
         res = []
         for ids, subbatch_encoded in subbatching.split(
-            encoded, costs=self._get_lens(encoded), max_cost=subbatch_max_tokens
+                encoded, costs=self._get_lens(encoded), max_cost=subbatch_max_tokens
         ):
             subbatch = self.pad_encoded(subbatch_encoded)
             subbatch["batch_size"] = batch_size
@@ -250,8 +247,8 @@ class ChartParser(nn.Module, parse_base.BaseParser):
         valid_token_mask = batch["valid_token_mask"].to(self.output_device)
 
         if (
-            self.encoder is not None
-            and valid_token_mask.shape[1] > self.add_timing.timing_table.shape[0]
+                self.encoder is not None
+                and valid_token_mask.shape[1] > self.add_timing.timing_table.shape[0]
         ):
             raise ValueError(
                 "Sentence of length {} exceeds the maximum supported length of "
@@ -322,7 +319,7 @@ class ChartParser(nn.Module, parse_base.BaseParser):
         fencepost_annotations = torch.cat(
             [
                 annotations[:, :-1, : self.d_model // 2],
-                annotations[:, 1:, self.d_model // 2 :],
+                annotations[:, 1:, self.d_model // 2:],
             ],
             -1,
         )
@@ -330,9 +327,9 @@ class ChartParser(nn.Module, parse_base.BaseParser):
         # Note that the bias added to the final layer norm is useless because
         # this subtraction gets rid of it
         span_features = (
-            torch.unsqueeze(fencepost_annotations, 1)
-            - torch.unsqueeze(fencepost_annotations, 2)
-        )[:, :-1, 1:]
+                                torch.unsqueeze(fencepost_annotations, 1)
+                                - torch.unsqueeze(fencepost_annotations, 2)
+                        )[:, :-1, 1:]
         span_scores = self.f_label(span_features)
         span_scores = torch.cat(
             [span_scores.new_zeros(span_scores.shape[:-1] + (1,)), span_scores], -1
@@ -359,7 +356,7 @@ class ChartParser(nn.Module, parse_base.BaseParser):
             return span_loss + tag_loss
 
     def _parse_encoded(
-        self, examples, encoded, return_compressed=False, return_scores=False
+            self, examples, encoded, return_compressed=False, return_scores=False
     ):
         with torch.no_grad():
             batch = self.pad_encoded(encoded)
@@ -384,7 +381,7 @@ class ChartParser(nn.Module, parse_base.BaseParser):
             elif return_compressed:
                 output = self.decoder.compressed_output_from_chart(charts_np[i])
                 if tag_ids_np is not None:
-                    output = output.with_tags(tag_ids_np[i, 1 : example_len + 1])
+                    output = output.with_tags(tag_ids_np[i, 1: example_len + 1])
                 yield output
             else:
                 if tag_scores is None:
@@ -392,7 +389,7 @@ class ChartParser(nn.Module, parse_base.BaseParser):
                 else:
                     predicted_tags = [
                         self.tag_from_index[i]
-                        for i in tag_ids_np[i, 1 : example_len + 1]
+                        for i in tag_ids_np[i, 1: example_len + 1]
                     ]
                     leaves = [
                         (word, predicted_tag)
@@ -403,11 +400,11 @@ class ChartParser(nn.Module, parse_base.BaseParser):
                 yield self.decoder.tree_from_chart(charts_np[i], leaves=leaves)
 
     def parse(
-        self,
-        examples,
-        return_compressed=False,
-        return_scores=False,
-        subbatch_max_tokens=None,
+            self,
+            examples,
+            return_compressed=False,
+            return_scores=False,
+            subbatch_max_tokens=None,
     ):
         training = self.training
         self.eval()

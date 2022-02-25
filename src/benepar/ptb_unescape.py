@@ -39,16 +39,16 @@ def guess_space_after_non_english(escaped_words):
     sp_after = [True for _ in escaped_words]
     for i, word in enumerate(escaped_words):
         if i > 0 and (
-            (
-                word.startswith("-")
-                and not any(word.startswith(x) for x in PTB_DASH_ESCAPED)
-            )
-            or any(word.startswith(x) for x in NO_SPACE_BEFORE)
-            or word == "'"
+                (
+                        word.startswith("-")
+                        and not any(word.startswith(x) for x in PTB_DASH_ESCAPED)
+                )
+                or any(word.startswith(x) for x in NO_SPACE_BEFORE)
+                or word == "'"
         ):
             sp_after[i - 1] = False
         if (
-            word.endswith("-") and not any(word.endswith(x) for x in PTB_DASH_ESCAPED)
+                word.endswith("-") and not any(word.endswith(x) for x in PTB_DASH_ESCAPED)
         ) or any(word.endswith(x) for x in NO_SPACE_AFTER):
             sp_after[i] = False
 
@@ -67,16 +67,16 @@ def guess_space_after(escaped_words, for_english=True):
             sp_after[i - 1] = False
 
         if i > 0 and (
-            (
-                word.startswith("-")
-                and not any(word.startswith(x) for x in PTB_DASH_ESCAPED)
-            )
-            or any(word.startswith(x) for x in NO_SPACE_BEFORE)
-            or word.lower() in NO_SPACE_BEFORE_TOKENS_ENGLISH
+                (
+                        word.startswith("-")
+                        and not any(word.startswith(x) for x in PTB_DASH_ESCAPED)
+                )
+                or any(word.startswith(x) for x in NO_SPACE_BEFORE)
+                or word.lower() in NO_SPACE_BEFORE_TOKENS_ENGLISH
         ):
             sp_after[i - 1] = False
         if (
-            word.endswith("-") and not any(word.endswith(x) for x in PTB_DASH_ESCAPED)
+                word.endswith("-") and not any(word.endswith(x) for x in PTB_DASH_ESCAPED)
         ) or any(word.endswith(x) for x in NO_SPACE_AFTER):
             sp_after[i] = False
 

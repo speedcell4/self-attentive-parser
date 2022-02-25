@@ -2,13 +2,13 @@ import dataclasses
 from typing import List, Optional, Tuple
 
 import nltk
-from nltk.corpus.reader.bracket_parse import BracketParseCorpusReader
 import tokenizations
 import torch
+from nltk.corpus.reader.bracket_parse import BracketParseCorpusReader
 
+import transliterate
 from benepar import ptb_unescape
 from benepar.parse_base import BaseInputExample
-import transliterate
 
 
 @dataclasses.dataclass
@@ -104,7 +104,7 @@ def read_text(text_path):
                             word = multiword_combined[have_up_to:]
                             sent.append((word, multiword_sp_after))
                         elif char_idxs:
-                            word = multiword_combined[have_up_to : max(char_idxs) + 1]
+                            word = multiword_combined[have_up_to: max(char_idxs) + 1]
                             sent.append((word, False))
                             have_up_to = max(char_idxs) + 1
                         else:

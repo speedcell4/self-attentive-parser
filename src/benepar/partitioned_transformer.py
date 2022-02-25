@@ -99,7 +99,7 @@ class PartitionedLinear(nn.Module):
 
 class PartitionedMultiHeadAttention(nn.Module):
     def __init__(
-        self, d_model, n_head, d_qkv, attention_dropout=0.1, initializer_range=0.02
+            self, d_model, n_head, d_qkv, attention_dropout=0.1, initializer_range=0.02
     ):
         super().__init__()
 
@@ -141,15 +141,15 @@ class PartitionedMultiHeadAttention(nn.Module):
 
 class PartitionedTransformerEncoderLayer(nn.Module):
     def __init__(
-        self,
-        d_model,
-        n_head,
-        d_qkv,
-        d_ff,
-        ff_dropout=0.1,
-        residual_dropout=0.1,
-        attention_dropout=0.1,
-        activation=PartitionedReLU(),
+            self,
+            d_model,
+            n_head,
+            d_qkv,
+            d_ff,
+            ff_dropout=0.1,
+            residual_dropout=0.1,
+            attention_dropout=0.1,
+            activation=PartitionedReLU(),
     ):
         super().__init__()
         self.self_attn = PartitionedMultiHeadAttention(

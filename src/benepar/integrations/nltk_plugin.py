@@ -1,14 +1,13 @@
 import dataclasses
 import itertools
-from typing import List, Optional, Tuple
+from typing import List, Optional
 
 import nltk
 import torch
 
 from .downloader import load_trained_model
-from ..parse_base import BaseParser, BaseInputExample
+from ..parse_base import BaseInputExample
 from ..ptb_unescape import ptb_unescape, guess_space_after
-
 
 TOKENIZER_LOOKUP = {
     "en": "english",
@@ -201,7 +200,7 @@ class Parser:
 
         end_sentinel = object()
         for batch_sents in itertools.zip_longest(
-            *([iter(sents)] * self.batch_size), fillvalue=end_sentinel
+                *([iter(sents)] * self.batch_size), fillvalue=end_sentinel
         ):
             batch_inputs = []
             for sent in batch_sents:
@@ -224,7 +223,7 @@ class Parser:
                 batch_inputs.append(self._with_missing_fields_filled(sent))
 
             for inp, output in zip(
-                batch_inputs, self._parser.parse(batch_inputs, return_compressed=True)
+                    batch_inputs, self._parser.parse(batch_inputs, return_compressed=True)
             ):
                 # If pos tags are provided as input, ignore any tags predicted
                 # by the parser.
@@ -246,11 +245,11 @@ class Parser:
         elif sent.escaped_words is None:
             escaped_words = [
                 word.replace("(", "-LRB-")
-                .replace(")", "-RRB-")
-                .replace("{", "-LCB-")
-                .replace("}", "-RCB-")
-                .replace("[", "-LSB-")
-                .replace("]", "-RSB-")
+                    .replace(")", "-RRB-")
+                    .replace("{", "-LCB-")
+                    .replace("}", "-RCB-")
+                    .replace("[", "-LSB-")
+                    .replace("]", "-RSB-")
                 for word in sent.words
             ]
             sent = dataclasses.replace(sent, escaped_words=escaped_words)

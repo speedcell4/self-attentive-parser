@@ -9,13 +9,13 @@ import transformers
 
 
 def retokenize(
-    tokenizer,
-    words,
-    space_after,
-    return_attention_mask=True,
-    return_offsets_mapping=False,
-    return_tensors=None,
-    **kwargs
+        tokenizer,
+        words,
+        space_after,
+        return_attention_mask=True,
+        return_offsets_mapping=False,
+        return_tensors=None,
+        **kwargs
 ):
     """Re-tokenize into subwords.
 
@@ -62,7 +62,7 @@ def retokenize(
     token_idx, (token_start, token_end) = next(offset_mapping_iter)
     words_from_tokens = [-100] * len(words)
     for word_idx, (word_start, word_end) in enumerate(
-        zip(word_offset_starts, word_offset_ends)
+            zip(word_offset_starts, word_offset_ends)
     ):
         while token_end <= word_start:
             token_idx, (token_start, token_end) = next(offset_mapping_iter)
@@ -199,7 +199,7 @@ class Retokenizer:
                 )
             else:
                 example["words_from_tokens"] = (
-                    [start_token_idx] + example["words_from_tokens"] + [stop_token_idx]
+                        [start_token_idx] + example["words_from_tokens"] + [stop_token_idx]
                 )
         return example
 

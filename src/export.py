@@ -1,21 +1,18 @@
 import argparse
-import functools
-import itertools
 import os.path
 import time
 
+import numpy as np
 import torch
 import torch.nn as nn
+import sys
 
-import numpy as np
+from nltk import tree
 
 import evaluate
 import treebanks
-
 from benepar import Parser, InputSentence
 from benepar.partitioned_transformer import PartitionedMultiHeadAttention
-
-import json
 
 
 def format_elapsed(start_time):
@@ -23,9 +20,9 @@ def format_elapsed(start_time):
     minutes, seconds = divmod(elapsed_time, 60)
     hours, minutes = divmod(minutes, 60)
     days, hours = divmod(hours, 24)
-    elapsed_string = "{}h{:02}m{:02}s".format(hours, minutes, seconds)
+    elapsed_string = f"{hours}h{minutes:02}m{seconds:02}s"
     if days > 0:
-        elapsed_string = "{}d{}".format(days, elapsed_string)
+        elapsed_string = f"{days}d{elapsed_string}"
     return elapsed_string
 
 
@@ -42,13 +39,13 @@ def inputs_from_treebank(treebank, predict_tags):
 
 
 def run_test(args):
-    print("Loading test trees from {}...".format(args.test_path))
+    print(f"Loading test trees from {args.test_path}...")
     test_treebank = treebanks.load_trees(
         args.test_path, args.test_path_text, args.text_processing
     )
-    print("Loaded {:,} test examples.".format(len(test_treebank)))
+    print(f"Loaded {len(test_treebank):,} test examples.")
 
-    print("Loading model from {}...".format(args.model_path))
+    print(f"Loading model from {args.model_path}...")
     parser = Parser(args.model_path, batch_size=args.batch_size)
 
     print("Parsing test sentences...")
@@ -63,7 +60,7 @@ def run_test(args):
 
     test_predicted = []
     for predicted_tree in parser.parse_sents(
-        inputs_from_treebank(test_treebank, predict_tags=args.predict_tags)
+            inputs_from_treebank(test_treebank, predict_tags=args.predict_tags)
     ):
         test_predicted.append(predicted_tree)
         if output_file is not None:
@@ -84,7 +81,7 @@ def get_compressed_state_dict(model):
     state_dict = model.state_dict()
     for module_name, module in model.named_modules():
         if not isinstance(
-            module, (nn.Linear, nn.Embedding, PartitionedMultiHeadAttention)
+                module, (nn.Linear, nn.Embedding, PartitionedMultiHeadAttention)
         ):
             continue
         elif "token_type_embeddings" in module_name:
@@ -134,7 +131,7 @@ def get_compressed_state_dict(model):
                 scale = scale.item()
                 zero_point = zero_point.item()
                 cluster_centers = (
-                    scale * (np.arange(0, 256, 256 / num_steps) - zero_point)[:, None]
+                        scale * (np.arange(0, 256, 256 / num_steps) - zero_point)[:, None]
                 )
                 cluster_centers = np.asarray(cluster_centers, dtype=np.float32)
             else:
@@ -143,8 +140,8 @@ def get_compressed_state_dict(model):
                 max_val = weight_np.max()
                 bucket_width = (max_val - min_val) / num_steps
                 cluster_centers = (
-                    min_val
-                    + (np.arange(num_steps, dtype=np.float32) + 0.5) * bucket_width
+                        min_val
+                        + (np.arange(num_steps, dtype=np.float32) + 0.5) * bucket_width
                 )
                 cluster_centers = cluster_centers.reshape((-1, 1))
 
@@ -264,10 +261,10 @@ def run_export(args):
         precision=notags_exported_fscore.precision - notags_test_fscore.precision,
         fscore=notags_exported_fscore.fscore - notags_test_fscore.fscore,
         complete_match=(
-            notags_exported_fscore.complete_match - notags_test_fscore.complete_match
+                notags_exported_fscore.complete_match - notags_test_fscore.complete_match
         ),
         tagging_accuracy=(
-            exported_fscore.tagging_accuracy - test_fscore.tagging_accuracy
+                exported_fscore.tagging_accuracy - test_fscore.tagging_accuracy
         ),
     )
     print("delta-fscore {}".format(fscore_delta))

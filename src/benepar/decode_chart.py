@@ -123,7 +123,7 @@ class ChartDecoder:
                     label_set.add(label)
         label_set = [""] + sorted(label_set)
         return {label: i for i, label in enumerate(label_set)}
-    
+
     @staticmethod
     def infer_force_root_constituent(trees):
         for tree in trees:

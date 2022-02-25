@@ -28,7 +28,7 @@ def split(*data, costs, max_cost):
     subbatch_size = 1
     while costs_argsort:
         if subbatch_size == len(costs_argsort) or (
-            subbatch_size * costs[costs_argsort[subbatch_size]] > max_cost
+                subbatch_size * costs[costs_argsort[subbatch_size]] > max_cost
         ):
             subbatch_item_ids = costs_argsort[:subbatch_size]
             subbatch_data = [[items[i] for i in subbatch_item_ids] for items in data]

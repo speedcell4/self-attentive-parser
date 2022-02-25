@@ -64,22 +64,22 @@ def parse_string(span):
         if (i + 1) >= j:
             token = doc[i]
             s = (
-                "("
-                + u"{} {}".format(token.tag_, token.text)
-                .replace("(", "-LRB-")
-                .replace(")", "-RRB-")
-                .replace("{", "-LCB-")
-                .replace("}", "-RCB-")
-                .replace("[", "-LSB-")
-                .replace("]", "-RSB-")
-                + ")"
+                    "("
+                    + u"{} {}".format(token.tag_, token.text)
+                    .replace("(", "-LRB-")
+                    .replace(")", "-RRB-")
+                    .replace("{", "-LCB-")
+                    .replace("}", "-RCB-")
+                    .replace("[", "-LSB-")
+                    .replace("]", "-RSB-")
+                    + ")"
             )
         else:
             children = []
             while (
-                (idx + 1) < len(constituent_data.starts)
-                and i <= constituent_data.starts[idx + 1]
-                and constituent_data.ends[idx + 1] <= j
+                    (idx + 1) < len(constituent_data.starts)
+                    and i <= constituent_data.starts[idx + 1]
+                    and constituent_data.ends[idx + 1] <= j
             ):
                 children.append(make_str())
 
@@ -162,14 +162,14 @@ def install_spacy_extensions():
     Span.set_extension("children", getter=get_child_spans)
 
     Token.set_extension(
-        "labels", getter=lambda token: get_labels(token.doc[token.i : token.i + 1])
+        "labels", getter=lambda token: get_labels(token.doc[token.i: token.i + 1])
     )
     Token.set_extension(
         "parse_string",
-        getter=lambda token: parse_string(token.doc[token.i : token.i + 1]),
+        getter=lambda token: parse_string(token.doc[token.i: token.i + 1]),
     )
     Token.set_extension(
-        "parent", getter=lambda token: get_parent_span(token.doc[token.i : token.i + 1])
+        "parent", getter=lambda token: get_parent_span(token.doc[token.i: token.i + 1])
     )
 
 

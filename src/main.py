@@ -4,17 +4,16 @@ import itertools
 import os.path
 import time
 
+import numpy as np
 import torch
 
-import numpy as np
-
+import evaluate
+import learning_rates
+import treebanks
 from benepar import char_lstm
 from benepar import decode_chart
 from benepar import nkutil
 from benepar import parse_chart
-import evaluate
-import learning_rates
-import treebanks
 
 
 def format_elapsed(start_time):
@@ -22,9 +21,9 @@ def format_elapsed(start_time):
     minutes, seconds = divmod(elapsed_time, 60)
     hours, minutes = divmod(minutes, 60)
     days, hours = divmod(hours, 24)
-    elapsed_string = "{}h{:02}m{:02}s".format(hours, minutes, seconds)
+    elapsed_string = f"{hours}h{minutes:02}m{seconds:02}s"
     if days > 0:
-        elapsed_string = "{}d{}".format(days, elapsed_string)
+        elapsed_string = f"{days}d{elapsed_string}"
     return elapsed_string
 
 
@@ -90,21 +89,21 @@ def run_train(args, hparams):
     print("Hyperparameters:")
     hparams.print()
 
-    print("Loading training trees from {}...".format(args.train_path))
+    print(f"Loading training trees from {args.train_path}...")
     train_treebank = treebanks.load_trees(
         args.train_path, args.train_path_text, args.text_processing
     )
     if hparams.max_len_train > 0:
         train_treebank = train_treebank.filter_by_length(hparams.max_len_train)
-    print("Loaded {:,} training examples.".format(len(train_treebank)))
+    print(f"Loaded {len(train_treebank):,} training examples.")
 
-    print("Loading development trees from {}...".format(args.dev_path))
+    print(f"Loading development trees from {args.dev_path}...")
     dev_treebank = treebanks.load_trees(
         args.dev_path, args.dev_path_text, args.text_processing
     )
     if hparams.max_len_dev > 0:
         dev_treebank = dev_treebank.filter_by_length(hparams.max_len_dev)
-    print("Loaded {:,} development examples.".format(len(dev_treebank)))
+    print(f"Loaded {len(dev_treebank):,} development examples.")
 
     print("Constructing vocabularies...")
     label_vocab = decode_chart.ChartDecoder.build_vocab(train_treebank.trees)
@@ -189,15 +188,9 @@ def run_train(args, hparams):
         )
         dev_fscore = evaluate.evalb(args.evalb_dir, dev_treebank.trees, dev_predicted)
 
-        print(
-            "dev-fscore {} "
-            "dev-elapsed {} "
-            "total-elapsed {}".format(
-                dev_fscore,
-                format_elapsed(dev_start_time),
-                format_elapsed(start_time),
-            )
-        )
+        print(f'dev-fscore {dev_fscore} '
+              f'dev-elapsed {format_elapsed(dev_start_time)} '
+              f'total-elapsed {format_elapsed(start_time)}')
 
         if dev_fscore.fscore > best_dev_fscore:
             if best_dev_model_path is not None:
@@ -205,21 +198,15 @@ def run_train(args, hparams):
                 for ext in extensions:
                     path = best_dev_model_path + ext
                     if os.path.exists(path):
-                        print("Removing previous model file {}...".format(path))
+                        print(f'Removing previous model file {path}...')
                         os.remove(path)
 
             best_dev_fscore = dev_fscore.fscore
-            best_dev_model_path = "{}_dev={:.2f}".format(
-                args.model_path_base, dev_fscore.fscore
-            )
+            best_dev_model_path = f"{args.model_path_base}_dev={dev_fscore.fscore:.2f}"
             best_dev_processed = total_processed
-            print("Saving new best model to {}...".format(best_dev_model_path))
+            print(f"Saving new best model to {best_dev_model_path}...")
             torch.save(
-                {
-                    "config": parser.config,
-                    "state_dict": parser.state_dict(),
-                    "optimizer": optimizer.state_dict(),
-                },
+                dict(config=parser.config, state_dict=parser.state_dict(), optimizer=optimizer.state_dict()),
                 best_dev_model_path + ".pt",
             )
 
@@ -257,22 +244,13 @@ def run_train(args, hparams):
             optimizer.step()
 
             print(
-                "epoch {:,} "
-                "batch {:,}/{:,} "
-                "processed {:,} "
-                "batch-loss {:.4f} "
-                "grad-norm {:.4f} "
-                "epoch-elapsed {} "
-                "total-elapsed {}".format(
-                    epoch,
-                    batch_num,
-                    int(np.ceil(len(train_treebank) / hparams.batch_size)),
-                    total_processed,
-                    batch_loss_value,
-                    grad_norm,
-                    format_elapsed(epoch_start_time),
-                    format_elapsed(start_time),
-                )
+                f'epoch {epoch:,} '
+                f'batch {batch_num:,}/{int(np.ceil(len(train_treebank) / hparams.batch_size)):,} '
+                f'processed {total_processed:,} '
+                f'batch-loss {batch_loss_value:.4f} '
+                f'grad-norm {grad_norm:.4f} '
+                f'epoch-elapsed {format_elapsed(epoch_start_time)} '
+                f'total-elapsed {format_elapsed(start_time)}'
             )
 
             if current_processed >= check_every:
@@ -283,20 +261,20 @@ def run_train(args, hparams):
                 scheduler.step()
 
         if (total_processed - best_dev_processed) > (
-            (hparams.step_decay_patience + 1)
-            * hparams.max_consecutive_decays
-            * len(train_treebank)
+                (hparams.step_decay_patience + 1)
+                * hparams.max_consecutive_decays
+                * len(train_treebank)
         ):
             print("Terminating due to lack of improvement in dev fscore.")
             break
 
 
 def run_test(args):
-    print("Loading test trees from {}...".format(args.test_path))
+    print(f"Loading test trees from {args.test_path}...")
     test_treebank = treebanks.load_trees(
         args.test_path, args.test_path_text, args.text_processing
     )
-    print("Loaded {:,} test examples.".format(len(test_treebank)))
+    print(f"Loaded {len(test_treebank):,} test examples.")
 
     if len(args.model_path) != 1:
         raise NotImplementedError(
@@ -305,7 +283,7 @@ def run_test(args):
         )
 
     model_path = args.model_path[0]
-    print("Loading model from {}...".format(model_path))
+    print(f"Loading model from {model_path}...")
     parser = parse_chart.ChartParser.from_trained(model_path)
     if args.no_predict_tags and parser.f_tag is not None:
         print("Removing part-of-speech tagging head...")
@@ -329,7 +307,7 @@ def run_test(args):
     elif args.output_path:
         with open(args.output_path, "w") as outfile:
             for tree in test_predicted:
-                outfile.write("{}\n".format(tree.pformat(margin=1e100)))
+                outfile.write(f"{tree.pformat(margin=1e100)}\n")
 
     # The tree loader does some preprocessing to the trees (e.g. stripping TOP
     # symbols or SPMRL morphological features). We compare with the input file
@@ -349,11 +327,8 @@ def run_test(args):
     )
 
     print(
-        "test-fscore {} "
-        "test-elapsed {}".format(
-            test_fscore,
-            format_elapsed(start_time),
-        )
+        f"test-fscore {test_fscore} "
+        f"test-elapsed {format_elapsed(start_time)}"
     )
 
 

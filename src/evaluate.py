@@ -17,16 +17,16 @@ class FScore(object):
 
     def __str__(self):
         return (
-            f"("
-            f"Recall={self.recall:.2f}, "
-            f"Precision={self.precision:.2f}, "
-            f"FScore={self.fscore:.2f}, "
-            f"CompleteMatch={self.complete_match:.2f}"
-        ) + (
-            f", TaggingAccuracy={self.tagging_accuracy:.2f})"
-            if self.tagging_accuracy < 100
-            else ")"
-        )
+                   f"("
+                   f"Recall={self.recall:.2f}, "
+                   f"Precision={self.precision:.2f}, "
+                   f"FScore={self.fscore:.2f}, "
+                   f"CompleteMatch={self.complete_match:.2f}"
+               ) + (
+                   f", TaggingAccuracy={self.tagging_accuracy:.2f})"
+                   if self.tagging_accuracy < 100
+                   else ")"
+               )
 
 
 def evalb(evalb_dir, gold_trees, predicted_trees, ref_gold_path=None):
@@ -109,15 +109,15 @@ def evalb(evalb_dir, gold_trees, predicted_trees, ref_gold_path=None):
                 break
 
     success = (
-        not math.isnan(fscore.fscore) or fscore.recall == 0.0 or fscore.precision == 0.0
+            not math.isnan(fscore.fscore) or fscore.recall == 0.0 or fscore.precision == 0.0
     )
 
     if success:
         temp_dir.cleanup()
     else:
         print("Error reading EVALB results.")
-        print("Gold path: {}".format(gold_path))
-        print("Predicted path: {}".format(predicted_path))
-        print("Output path: {}".format(output_path))
+        print(f"Gold path: {gold_path}")
+        print(f"Predicted path: {predicted_path}")
+        print(f"Output path: {output_path}")
 
     return fscore
